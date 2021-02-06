@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+
+        "outDir": "build",
+        "rootDir": "src",
+        "resolveJsonModule": true,
+        "target": "ES5",
+        "moduleResolution": "node"
+    },
+    "lib": ["2018"],
+    "include": [
+        "src/**/*"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
+}
