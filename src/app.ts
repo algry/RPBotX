@@ -1,28 +1,38 @@
 import * as Discord from "discord.js";
 import * as config from "./config.json";
-import { promises as fsp } from "fs";
+import ChannelHandler from "./ChannelHandler"
 
-const client = new Discord.Client();
+const intents = new Discord.Intents([
+	Discord.Intents.NON_PRIVILEGED,
+	"GUILD_MEMBERS"
+]);
+const client = new Discord.Client({
+	ws: {intents}
+});
+const channels:Map<Discord.TextChannel,ChannelHandler> = new Map();
 
 client.login(config.token);
 
 client.on("ready", async ()=>{
 	console.log("Ready");
+	
+	// await client.channels.fetch();
+	// for (const channel of Array.from(client.channels.cache.values())) {
+		// if (channel instanceof Discord.TextChannel) {
+			// channels.set(<Discord.TextChannel>channel, new ChannelHandler(client, <Discord.TextChannel>channel))
+		// }
+	// }
 });
 
 client.on("message", async (message:Discord.Message)=>{
 	if (message.author.bot || !message.guild) return;
 	
-	await message.guild.roles.fetch();
-	
-	const role = message.guild.roles.cache.find((role:Discord.Role)=>message.content.startsWith(role.name + ":"));
-	
-	if(role) {
-		const filepath = config.storyPath + message.guild.name + "/" + (message.channel as Discord.TextChannel).name + ".md"
-		await fsp.appendFile(filepath, message.content + "\r\n\r\n");
-		message.channel.send(":white_check_mark:");
+	if (!channels.has(<Discord.TextChannel>message.channel)){
+		const newHandler = new ChannelHandler(client, <Discord.TextChannel>message.channel);
+		channels.set(<Discord.TextChannel>message.channel, newHandler);
+		await newHandler.reloadOrder();
 	}
-	else if(message.content.startsWith("[")) {
-		message.channel.send("Currently Undefined Error (err 001)"); // Make proper error message
-	}
+	
+	const handler = channels.get(<Discord.TextChannel>message.channel);
+	if (handler) handler.handleMessage(message);
 });
