@@ -1,11 +1,12 @@
 {
     "compilerOptions": {
-
+        "downlevelIteration": true,
         "outDir": "build",
         "rootDir": "src",
         "resolveJsonModule": true,
         "target": "ES5",
-        "moduleResolution": "node"
+        "moduleResolution": "node",
+        "sourceMap": true
     },
     "lib": ["2018"],
     "include": [
